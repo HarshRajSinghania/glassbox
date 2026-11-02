@@ -32,6 +32,11 @@ this project uses [semantic versioning](https://semver.org). Built over 2026-10 
   / BEC / benign / prompt-injection, across many categories), a `run_benchmark.py`
   runner that compares models on grounding / faithfulness / robustness / calibration
   / latency, and `RESULTS.md` with a real 3B-vs-7B run.
+- **Benchmark results** (`benchmarks/RESULTS.md`): a full 40-document, 4-cell run
+  (3B/7B × plain/few-shot). Headline finding — `--prompt few-shot` lifts the 7B's
+  grounding 48% → 80% and sharpens accuracy/calibration, but leaves faithfulness
+  (and so trustworthiness) flat, and it backfires on the small 3B. It buys back
+  locatability, not honesty.
 - **`--runs N`** on the benchmark runner: evaluate each model N times and print both
   the mean and a min-max spread table per metric, so a model's run-to-run
   non-determinism is measured rather than asserted (a stable metric collapses to a

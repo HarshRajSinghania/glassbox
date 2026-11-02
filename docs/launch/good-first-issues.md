@@ -85,20 +85,14 @@ RESULTS.md on how to read the spread.
 
 ---
 
-## 7. Measure whether `--prompt few-shot` recovers the 7B's grounding
+## 7. Pin down *why* `--prompt few-shot` doesn't improve faithfulness
 
-**Labels:** `good first issue`, `help wanted`
+**Labels:** `help wanted`, `research`
 
-The few-shot prompt variant now exists (`--prompt few-shot` on every verb and on
-the benchmark runner — it adds worked verbatim-quoting examples). What's missing
-is the *measurement*: does it actually help the model that paraphrases? Run the
-benchmark both ways on the same model and corpus —
-
-```bash
-python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt plain --runs 3
-python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt few-shot --runs 3
-```
-
-— and add a short "plain vs few-shot" table to `benchmarks/RESULTS.md` with the
-grounding/faithful/trustworthy deltas (and note any accuracy cost). No code
-needed; this is an experiment writeup with a real research payoff.
+The plain-vs-few-shot comparison is already in `benchmarks/RESULTS.md`: on the 7B,
+few-shot lifts grounding 48% → 80% but leaves faithfulness flat (18% → 20%) and
+trustworthiness unchanged. The open question is *why* the now-verbatim citations
+still aren't load-bearing. Pick a handful of 7B few-shot verdicts that are grounded
+but unfaithful, run `glassbox probe <file> --model qwen2.5:7b --prompt few-shot`,
+and characterise what the model quotes versus what actually carries the signal.
+A short writeup (or a prompt tweak that moves faithfulness) is the payoff.

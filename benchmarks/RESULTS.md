@@ -1,65 +1,90 @@
 # Benchmark — which local model is most *auditable*?
 
-Not "which is most accurate" — both models below score the same on accuracy. The
-question glassbox answers is different: when a model is right, can you *trust its
-reasons*? Run `glassbox audit` + `calibrate` over a corpus and the answer is a
-number.
+Not "which is most accurate" — the question glassbox answers is different: when a
+model is right, can you *trust its reasons*? Run `glassbox audit` + `calibrate`
+over a corpus and the answer is a number. This page also asks a second question:
+does the `--prompt few-shot` nudge — worked examples of verbatim quoting — fix a
+model that paraphrases its evidence?
 
 - **Corpus:** [`corpus.jsonl`](corpus.jsonl) — 40 short emails: 16 phishing / scam /
   BEC, 18 benign, 6 prompt-injection (labelled suspicious — an email telling the
-  classifier to say "benign" is itself a red flag). **The table below predates the
-  expansion:** it's from the original 15-document corpus (6 / 6 / 3). A re-run on the
-  full 40 is a follow-up — it needs a local Ollama and takes a while.
+  classifier to say "benign" is itself a red flag).
 - **Models:** `qwen2.5:3b`, `qwen2.5:7b` via [Ollama](https://ollama.com), laptop
   GTX 1650 Ti (4 GB).
-- **Date:** 2026-11.
+- **Date:** 2026-11-03. One run per cell (see caveats).
 
 ## Results
 
-| Model | N | Accuracy | Grounded | Faithful | Robust | Trustworthy | ECE | ~s/doc |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `qwen2.5:3b` | 15 | 80% | **100%** | **60%** | 100% | **60%** | **0.21** | **35.9** |
-| `qwen2.5:7b` | 15 | 80% | 60% | 20% | 100% | 20% | 0.27 | 83.7 |
+| Model | Prompt | N | Accuracy | Grounded | Faithful | Robust | Trustworthy | ECE | ~s/doc |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `qwen2.5:3b` | plain | 40 | 82% | **98%** | **45%** | 95% | **45%** | 0.18 | 43.6 |
+| `qwen2.5:3b` | few-shot | 27 ⚠️ | 80% | 89% | 33% | 93% | 33% | 0.17 | 49.2 |
+| `qwen2.5:7b` | plain | 40 | 78% | 48% | 18% | 98% | 18% | 0.22 | 90.5 |
+| `qwen2.5:7b` | few-shot | 40 | **90%** | **80%** | 20% | 92% | 18% | **0.08** | 103.9 |
 
 *Grounded = cites real spans. Faithful = decision depends on them. Robust = survives
 meaning-preserving edits. Trustworthy = all three. ECE = calibration error (lower is
-better). ~s/doc = full `audit` + `calibrate` cost per document on this machine.*
+better). ~s/doc = full `audit` + `calibrate` cost per document on this machine.
+⚠️ 3B few-shot errored on 13 of 40 documents — see below; its rates are over the 27
+it could parse, which flatters them.*
 
-## Reading it
+## Reading it — plain prompt (3B vs 7B)
 
-- **Same accuracy, very different auditability.** Both label 12 of 15 correctly,
-  but the **3B is trustworthy on 60% of documents versus the 7B's 20%** — three
-  times more often. The gap is entirely in grounding and faithfulness.
-- **The 7B stops quoting verbatim.** Its grounding falls to 60%: it paraphrases its
-  "evidence" instead of copying it, so a third of its citations can't be located in
-  the source. Only 20% of its verdicts are faithful — the cited text rarely drives
-  the decision.
-- **Robustness is a wash.** Both hold up under lower-casing / whitespace / wrapper
-  edits (100%), including on the prompt-injection emails — neither was fooled into
-  flipping to "benign".
-- **The 3B is also 2.3× faster** on this hardware. For an auditing workflow the
-  smaller model wins on every axis that matters here.
+- **Same ballpark accuracy, very different auditability.** On the plain prompt the
+  **3B is trustworthy on 45% of documents versus the 7B's 18%** — 2.5× more often.
+  The gap is entirely in grounding and faithfulness, not robustness.
+- **The 7B stops quoting verbatim.** Its grounding is just 48%: it paraphrases its
+  "evidence" instead of copying it, so more than half its citations can't be located
+  in the source. Only 18% of its verdicts are faithful.
+- **Robustness is a wash** (95–98% both), including on the prompt-injection emails —
+  neither was fooled into flipping to "benign".
+- **The 3B is ~2× faster** on this hardware. For an auditing workflow the smaller
+  model wins on every plain-prompt axis that matters here.
 
-This reproduces, on a larger and more varied corpus, the 3B-vs-7B pattern first seen
-in [`../FINDINGS.md`](../FINDINGS.md): **"bigger" buys calibration headroom, not
-grounding, faithfulness, or speed.**
+This reproduces, on a larger corpus, the pattern from [`../FINDINGS.md`](../FINDINGS.md):
+**"bigger" buys calibration headroom, not grounding, faithfulness, or speed.**
+
+## Reading it — does `--prompt few-shot` help?
+
+The nudge cuts in opposite directions by model size:
+
+- **On the 7B it works, dramatically — but only for grounding.** Grounding jumps
+  **48% → 80%**, accuracy **78% → 90%**, and calibration sharpens **ECE 0.22 → 0.08**.
+  Two worked examples are enough to pull the fluent model back toward copying its
+  evidence instead of rewording it.
+- **…yet trustworthiness does not move: 18% → 18%.** Because **faithfulness barely
+  budges (18% → 20%)**. The 7B now quotes *correctly*, but the quotes still aren't
+  *load-bearing* — erasing them rarely changes the verdict. **few-shot fixes
+  locatability, not faithfulness.** The citations got real; they didn't get honest.
+- **On the 3B it backfires.** The longer prompt destabilises the small model: it
+  errored on **13 of 40 documents** (malformed JSON / copying the examples), and
+  every quality rate fell on the ones that survived. few-shot is a big-model tool.
+
+**The headline:** making a model quote verbatim is not the same as making its
+reasons drive its decision. The prompt could buy back grounding, accuracy and
+calibration on the larger model — but faithfulness, the one axis that says the
+explanation is real, stayed stuck. And the single most trustworthy configuration
+here is still the plain, small model (`3b` + `plain`, 45%).
 
 ## Reproduce
 
 ```bash
 ollama pull qwen2.5:3b && ollama pull qwen2.5:7b
+
+# the plain 3B-vs-7B table
 python benchmarks/run_benchmark.py --models qwen2.5:3b,qwen2.5:7b
 
-# measure run-to-run non-determinism: evaluate each model N times. The main
-# table then shows the mean, and a second table shows the min-max spread per
-# metric. A metric that is stable across runs collapses to a single value.
+# the plain-vs-few-shot comparison (run once per style, same model)
+python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt plain
+python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt few-shot
+
+# quantify run-to-run non-determinism: --runs prints a min-max spread table too
 python benchmarks/run_benchmark.py --models qwen2.5:7b --runs 5
 ```
 
-> Caveats: the headline table is 15 documents, one run per model. The 7B is
-> non-deterministic run to run (see `FINDINGS.md`) — `--runs N` is how you quantify
-> that rather than assert it; in a quick 2-run check the 3B was perfectly stable, so
-> the spread to watch is the 7B's. Absolute latency is machine-specific (the 7B
-> spills onto CPU on a 4 GB GPU); the 2.3× *ratio* is the stable signal. Treat the
-> direction as real and the exact rates as noisy — the larger 40-document corpus and
-> several runs per model would firm it up.
+> Caveats: one run per cell, so treat the direction as real and the exact rates as
+> noisy — the 7B is non-deterministic run to run (`FINDINGS.md`); `--runs N`
+> quantifies that. The 3B few-shot row is computed over only the 27 documents it
+> could parse, which biases its rates upward. Absolute latency is machine-specific
+> (the 7B spills onto CPU on a 4 GB GPU); the ~2× 3B-vs-7B *ratio* is the stable
+> signal. Several runs per cell would firm all of this up.

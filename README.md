@@ -234,7 +234,7 @@ Grounding only works if the model copies its evidence verbatim. Some models — 
 glassbox audit email.txt --model qwen2.5:7b --prompt few-shot
 ```
 
-Whether it recovers a given model's grounding is an empirical question — measure it with `python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt few-shot` and compare against `--prompt plain`.
+On the 7B this works: grounding jumps from 48% to 80% (full numbers in [`benchmarks/RESULTS.md`](benchmarks/RESULTS.md)). But note the catch there — it buys back *locatability*, not *faithfulness*: the model quotes correctly, yet the quotes still don't drive the decision, so trustworthiness doesn't move. And on the small 3B the longer prompt backfires. few-shot is a big-model tool; measure before you trust it.
 
 ## How glassbox compares
 

@@ -85,6 +85,28 @@ was *underconfident* (right 100% of the time while claiming ~0.88); the 7B's
 confidence tracked its accuracy and came out well calibrated. So the bigger
 model's *numbers* got more meaningful even as its *explanations* got worse.
 
+## Can you fix it with a prompt?
+
+The obvious objection: the 7B only fails because the prompt asks for verbatim
+quotes and the model won't comply — so give it examples. glassbox has a
+`--prompt few-shot` mode that shows two worked examples of copying evidence
+character-for-character. I re-ran the whole 40-email benchmark with it.
+
+On the 7B it worked, dramatically — for one axis. Grounding jumped **48% → 80%**,
+accuracy **78% → 90%**, calibration error **0.22 → 0.08**. Two examples pulled the
+fluent model back toward quoting instead of rewording.
+
+But trustworthiness didn't move: **18% → 18%**. Because faithfulness barely
+budged (**18% → 20%**). The model now quotes *correctly* — the spans are real and
+locatable — but erasing them still rarely changes the verdict. The citations got
+real; they didn't get load-bearing. **The prompt bought back locatability, not
+faithfulness.** (And on the small 3B the longer prompt backfired outright — it
+produced malformed output on a third of the emails. few-shot is a big-model tool.)
+
+That's the part I find worth sitting with: you can make a model look more
+auditable — verbatim quotes, sharp confidence — without making its stated reasons
+any more connected to its actual decision.
+
 ## The takeaway
 
 > "Bigger" bought calibration, not auditability. Grounding, faithfulness and
