@@ -32,11 +32,18 @@ class Citation:
 
 @dataclass(frozen=True)
 class Policy:
-    """What question the model is answering, and the labels it may answer with."""
+    """What question the model is answering, and the labels it may answer with.
+
+    ``prompt_style`` selects how the instruction is phrased: ``"plain"`` (the
+    default) states the rules; ``"few-shot"`` also shows worked examples of
+    verbatim quoting, which helps a fluent model that otherwise paraphrases its
+    evidence instead of copying it.
+    """
 
     name: str
     question: str
     labels: tuple[str, ...]
+    prompt_style: str = "plain"
 
 
 @dataclass(frozen=True)

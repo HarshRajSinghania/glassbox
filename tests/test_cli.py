@@ -164,3 +164,27 @@ def test_lens_without_extra_gives_install_hint(capsys, monkeypatch):
     monkeypatch.setattr(cli, "whitebox_available", lambda: False)
     assert main(["lens", "hello world"]) == 2
     assert 'pip install -e ".[whitebox]"' in capsys.readouterr().err
+
+
+def test_prompt_few_shot_reaches_the_backend(tmp_path, monkeypatch):
+    doc = tmp_path / "m.txt"
+    doc.write_text("Verify your password now.")
+
+    import glassbox.cli as cli
+
+    seen: dict[str, str] = {}
+
+    def recorder(system, user):
+        seen["system"] = system
+        return (
+            '{"label": "suspicious", "confidence": 0.9, "rationale": "x",'
+            ' "evidence": ["Verify your password now"]}'
+        )
+
+    monkeypatch.setattr(cli, "OllamaBackend", lambda **kwargs: cli.CallableBackend(recorder))
+
+    # Default (plain) carries no examples; few-shot does.
+    assert main(["triage", str(doc)]) == 0
+    assert "EXAMPLE 1" not in seen["system"]
+    assert main(["triage", str(doc), "--prompt", "few-shot"]) == 0
+    assert "EXAMPLE 1" in seen["system"] and "EXAMPLE 2" in seen["system"]

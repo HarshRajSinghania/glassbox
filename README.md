@@ -226,6 +226,16 @@ document ──▶ model (verbatim-quote prompt) ──▶ {label, confidence, r
 
 Zero third-party dependencies — the Ollama backend speaks plain HTTP from the standard library.
 
+### When a model paraphrases instead of quoting
+
+Grounding only works if the model copies its evidence verbatim. Some models — larger, more fluent ones especially — reword their "evidence" into a nicer sentence, so the quote can no longer be found and grounding collapses (this is exactly what the 7B does in [`FINDINGS.md`](FINDINGS.md)). Every analysis verb takes `--prompt few-shot`, which adds two worked examples of character-for-character quoting:
+
+```bash
+glassbox audit email.txt --model qwen2.5:7b --prompt few-shot
+```
+
+Whether it recovers a given model's grounding is an empirical question — measure it with `python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt few-shot` and compare against `--prompt plain`.
+
 ## How glassbox compares
 
 | | glassbox | DeepEval | RAGAS | Guardrails AI | LangSmith |

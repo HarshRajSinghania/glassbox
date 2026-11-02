@@ -20,6 +20,7 @@ import contextlib
 import json
 import os
 import sys
+from dataclasses import replace
 
 from . import __version__
 from .audit import AuditReport, audit
@@ -43,8 +44,8 @@ from .calibration import (
 )
 from .consistency import ConsistencyReport, check
 from .faithfulness import FaithfulnessReport, analyze
-from .prompts import DEFAULT_POLICY
-from .schema import Verdict
+from .prompts import DEFAULT_POLICY, PROMPT_STYLES
+from .schema import Policy, Verdict
 from .serialize import (
     audit_dict,
     batch_dict,
@@ -165,6 +166,19 @@ def _add_model_args(p: argparse.ArgumentParser, *, demo_help: str | None = None)
     p.add_argument("--model", default=None, help="model name (default depends on backend)")
     p.add_argument("--host", default=DEFAULT_HOST, help="Ollama server URL (default: %(default)s)")
     p.add_argument("--json", dest="as_json", action="store_true", help="emit JSON instead of text")
+    p.add_argument(
+        "--prompt",
+        choices=PROMPT_STYLES,
+        default="plain",
+        help="instruction style: plain (default), or few-shot which adds worked "
+        "verbatim-quoting examples (helps a model that paraphrases its evidence)",
+    )
+
+
+def _policy(args) -> Policy:
+    """The triage policy for this invocation, carrying the chosen prompt style."""
+    style = getattr(args, "prompt", "plain")
+    return DEFAULT_POLICY if style == "plain" else replace(DEFAULT_POLICY, prompt_style=style)
 
 
 def _make_backend(args):
@@ -500,7 +514,7 @@ def _cmd_triage(args) -> int:
     if document is None:
         return 2
     try:
-        verdict = triage(document, backend, DEFAULT_POLICY)
+        verdict = triage(document, backend, _policy(args))
     except (BackendError, TriageError) as error:
         print(f"glassbox: {error}", file=sys.stderr)
         return 2
@@ -513,7 +527,7 @@ def _cmd_audit(args) -> int:
     if document is None:
         return 2
     try:
-        report = audit(document, backend, DEFAULT_POLICY)
+        report = audit(document, backend, _policy(args))
     except (BackendError, TriageError) as error:
         print(f"glassbox: {error}", file=sys.stderr)
         return 2
@@ -526,7 +540,7 @@ def _cmd_probe(args) -> int:
     if document is None:
         return 2
     try:
-        report = analyze(document, backend, DEFAULT_POLICY)
+        report = analyze(document, backend, _policy(args))
     except (BackendError, TriageError) as error:
         print(f"glassbox: {error}", file=sys.stderr)
         return 2
@@ -539,7 +553,7 @@ def _cmd_stress(args) -> int:
     if document is None:
         return 2
     try:
-        report = check(document, backend, DEFAULT_POLICY)
+        report = check(document, backend, _policy(args))
     except (BackendError, TriageError) as error:
         print(f"glassbox: {error}", file=sys.stderr)
         return 2
@@ -567,7 +581,7 @@ def _cmd_calibrate(args) -> int:
         return 2
 
     try:
-        report = evaluate(dataset, backend, DEFAULT_POLICY)
+        report = evaluate(dataset, backend, _policy(args))
     except (BackendError, TriageError) as error:
         print(f"glassbox: {error}", file=sys.stderr)
         return 2
@@ -597,7 +611,7 @@ def _cmd_batch(args) -> int:
         return 2
 
     try:
-        report = run_batch(documents, backend, DEFAULT_POLICY)
+        report = run_batch(documents, backend, _policy(args))
     except (BackendError, TriageError) as error:
         print(f"glassbox: {error}", file=sys.stderr)
         return 2

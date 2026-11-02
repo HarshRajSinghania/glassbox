@@ -21,12 +21,13 @@ from __future__ import annotations
 
 import argparse
 import time
+from dataclasses import replace
 from statistics import mean
 
 from glassbox.backends import OllamaBackend
 from glassbox.batch import load_documents, run_batch
 from glassbox.calibration import evaluate, load_dataset
-from glassbox.prompts import DEFAULT_POLICY
+from glassbox.prompts import DEFAULT_POLICY, PROMPT_STYLES
 
 # Metrics reported per run, in table order. latency is kept out of the spread
 # table (it's machine noise, not model non-determinism).
@@ -34,15 +35,16 @@ RATE_METRICS = ("accuracy", "grounded", "faithful", "robust", "trustworthy")
 SCORE_METRICS = ("ece",)
 
 
-def benchmark(model: str, corpus: str, host: str) -> dict:
+def benchmark(model: str, corpus: str, host: str, prompt_style: str = "plain") -> dict:
     """Run both lenses on *model* over *corpus* once and return the aggregate metrics."""
     backend = OllamaBackend(model=model, host=host)
+    policy = replace(DEFAULT_POLICY, prompt_style=prompt_style)
     documents = load_documents(corpus)
     dataset = load_dataset(corpus)
 
     start = time.monotonic()
-    batch = run_batch(documents, backend, DEFAULT_POLICY)
-    calibration = evaluate(dataset, backend, DEFAULT_POLICY)
+    batch = run_batch(documents, backend, policy)
+    calibration = evaluate(dataset, backend, policy)
     elapsed = time.monotonic() - start
 
     return {
@@ -116,6 +118,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--runs", type=int, default=1, help="evaluate each model this many times (default 1)"
     )
+    parser.add_argument(
+        "--prompt",
+        choices=PROMPT_STYLES,
+        default="plain",
+        help="instruction style (default plain); try few-shot to test whether "
+        "verbatim-quoting examples recover a model's grounding",
+    )
     args = parser.parse_args(argv)
 
     if args.runs < 1:
@@ -126,8 +135,8 @@ def main(argv: list[str] | None = None) -> int:
         runs = []
         for i in range(args.runs):
             suffix = f" (run {i + 1}/{args.runs})" if args.runs > 1 else ""
-            print(f"# benchmarking {model}{suffix} ...", flush=True)
-            runs.append(benchmark(model, args.corpus, args.host))
+            print(f"# benchmarking {model} [{args.prompt}]{suffix} ...", flush=True)
+            runs.append(benchmark(model, args.corpus, args.host, args.prompt))
         rows.append(aggregate(runs))
 
     print()

@@ -85,13 +85,20 @@ RESULTS.md on how to read the spread.
 
 ---
 
-## 7. Few-shot "quote verbatim" prompt variant + measure the delta
+## 7. Measure whether `--prompt few-shot` recovers the 7B's grounding
 
-**Labels:** `enhancement`, `help wanted`
+**Labels:** `good first issue`, `help wanted`
 
-The 7B's grounding collapses because it paraphrases instead of quoting (see
-FINDINGS.md). Add an optional prompt variant in `prompts.py` with one or two
-few-shot examples that demonstrate copying evidence character-for-character,
-selectable via a CLI flag (e.g. `--prompt few-shot`). Then re-run
-`glassbox batch` on both prompts for one model and report whether grounding
-improves. This is a small change with a real, measurable research payoff.
+The few-shot prompt variant now exists (`--prompt few-shot` on every verb and on
+the benchmark runner — it adds worked verbatim-quoting examples). What's missing
+is the *measurement*: does it actually help the model that paraphrases? Run the
+benchmark both ways on the same model and corpus —
+
+```bash
+python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt plain --runs 3
+python benchmarks/run_benchmark.py --models qwen2.5:7b --prompt few-shot --runs 3
+```
+
+— and add a short "plain vs few-shot" table to `benchmarks/RESULTS.md` with the
+grounding/faithful/trustworthy deltas (and note any accuracy cost). No code
+needed; this is an experiment writeup with a real research payoff.

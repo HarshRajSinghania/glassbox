@@ -6,6 +6,12 @@ this project uses [semantic versioning](https://semver.org). Built over 2026-10 
 ## Unreleased
 
 ### Added
+- **`--prompt {plain,few-shot}`** on every analysis verb (and the benchmark
+  runner). `few-shot` adds two worked examples that copy evidence
+  character-for-character, aimed at a fluent model that paraphrases its citations
+  instead of quoting them (which breaks grounding — see `FINDINGS.md`). The style
+  is carried on `Policy.prompt_style`, so it flows through every lens unchanged;
+  `plain` is the default and leaves the prompt as it was.
 - **Thai / multilingual consistency**: two meaning-preserving perturbations for
   the consistency lens — Thai numerals to Arabic (`๒๔` → `24`) and dropping
   politeness particles (`ครับ`/`ค่ะ`) — so `stress`/`audit` catch a verdict that
