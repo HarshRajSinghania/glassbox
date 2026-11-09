@@ -30,6 +30,8 @@ it could parse, which flatters them.*
 
 ## Reading it — plain prompt (3B vs 7B)
 
+![Grouped bar chart: qwen2.5:3b vs 7B on the plain prompt. Accuracy is close (82% vs 78%) but grounding (98% vs 48%), faithfulness (45% vs 18%) and trustworthiness (45% vs 18%) all favour the 3B.](auditability-3b-7b.png)
+
 - **Same ballpark accuracy, very different auditability.** On the plain prompt the
   **3B is trustworthy on 45% of documents versus the 7B's 18%** — 2.5× more often.
   The gap is entirely in grounding and faithfulness, not robustness.

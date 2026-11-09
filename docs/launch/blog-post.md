@@ -74,6 +74,8 @@ non-deterministic. Treat the direction as real, the exact rates as noisy.)*
 
 ## Pass one: the bigger model is *less* auditable
 
+![Grouped bar chart: qwen2.5:3b vs 7B on the plain prompt. Accuracy is close (82% vs 78%) but grounding (98% vs 48%), faithfulness (45% vs 18%) and trustworthiness (45% vs 18%) all favour the 3B.](https://raw.githubusercontent.com/winxtxrgit/glassbox/main/benchmarks/auditability-3b-7b.png)
+
 Compare the two **plain** rows. Accuracy is in the same ballpark (82% vs 78%), but
 the **3B is trustworthy on 45% of documents to the 7B's 18%** — two and a half
 times as often. The entire gap is in grounding and faithfulness.
@@ -100,6 +102,8 @@ the whole benchmark with it.
 On the 7B it worked, dramatically — for *one* axis. Grounding jumped **48% → 80%**,
 accuracy **78% → 90%**, calibration error **0.22 → 0.08**. Two examples pulled the
 fluent model back toward literal quoting.
+
+![Grouped bar chart: on qwen2.5:7b, few-shot lifts Grounded from 48% to 80% while Faithful (18% to 20%) and Trustworthy (18% to 18%) stay flat.](https://raw.githubusercontent.com/winxtxrgit/glassbox/main/benchmarks/fewshot-7b.png)
 
 **But trustworthiness didn't move: 18% → 18%.** Because faithfulness barely budged
 (**18% → 20%**). The model now quotes *correctly* — the spans are real and
