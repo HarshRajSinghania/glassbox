@@ -31,11 +31,17 @@ evidence verbatim, then runs three checks:
 - consistency: re-decide after meaning-preserving edits (lowercasing, whitespace,
   a forwarding wrapper) — if the label flips, it was keying on surface form.
 
-The thing I didn't expect: running it on Qwen 2.5 3B vs 7B, the *bigger* model is
-better calibrated but noticeably less auditable — it stops quoting verbatim and
-paraphrases instead, so grounding collapses from 100% to 60% and faithfulness
-from 60% to 20%, at the same accuracy. Writeup and numbers are in the repo
-(FINDINGS.md / benchmarks/RESULTS.md).
+The thing I didn't expect: on 40 emails, Qwen 2.5 7B is noticeably *less*
+auditable than the 3B at similar accuracy — it paraphrases its evidence instead
+of quoting it, so grounding falls to 48% (the 3B holds 98%) and it's trustworthy
+on 18% of docs vs the 3B's 45%.
+
+Then I tried to fix it with a few-shot "quote verbatim" prompt. It lifted the 7B's
+grounding 48% → 80% and sharpened accuracy and calibration — but faithfulness
+stayed flat (18% → 20%), so trustworthiness didn't move at all. The model now
+quotes correctly, yet erasing the quote still doesn't change the verdict. It
+bought back *locatability, not faithfulness*. (Writeup and numbers in
+benchmarks/RESULTS.md.)
 
 Core is pure stdlib Python, MIT. There's also a `--json` mode, a GitHub Action
 that fails CI on an untrustworthy verdict, and optional white-box lenses (logit

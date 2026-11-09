@@ -7,7 +7,7 @@
 ## Title
 
 ```
-I measured whether Qwen 2.5 7B explains itself better than 3B. It doesn't — it's better calibrated but less auditable.
+Qwen 2.5 7B is less auditable than the 3B on 40 emails — and a few-shot prompt fixed its grounding but not its faithfulness.
 ```
 
 ## Body
@@ -24,28 +24,32 @@ quote its evidence verbatim, then:
 
 Everything runs locally on Ollama — no API, nothing leaves the machine.
 
-Then I used it to compare `qwen2.5:3b` vs `qwen2.5:7b` on phishing/benign email
-triage (GTX 1650 Ti, 4 GB). Same accuracy (80%), but:
+Then I compared `qwen2.5:3b` vs `qwen2.5:7b` on 40 phishing/benign/injection
+emails (GTX 1650 Ti, 4 GB). Similar accuracy, very different auditability — plain
+prompt:
 
 | | 3B | 7B |
 |---|---:|---:|
-| Grounded | 100% | 60% |
-| Faithful | 60% | 20% |
-| Trustworthy (all checks) | 60% | 20% |
-| Calibration | underconfident | well calibrated |
-| ~s/doc | 35.9 | 83.7 |
+| Accuracy | 82% | 78% |
+| Grounded | 98% | 48% |
+| Faithful | 45% | 18% |
+| Trustworthy (all checks) | 45% | 18% |
+| ~s/doc | 43.6 | 90.5 |
 
-**The 7B stops quoting verbatim** — it paraphrases its "evidence", so a third of
-its citations can't be located in the source. It's also non-deterministic at
-temp 0 (re-running the same email flipped both the label and the citations). What
-it *did* gain was calibration: its confidence tracks accuracy, the 3B's doesn't.
+**The 7B stops quoting verbatim** — it paraphrases its "evidence", so more than
+half its citations can't be located in the source. It's also non-deterministic at
+temp 0 (re-running the same email flipped both the label and the citations).
 
-So on this task the smaller model is more auditable *and* 2.3× faster. Bigger
-bought calibration headroom, not grounded/faithful explanations.
+So I tried to fix it with a **few-shot "quote verbatim" prompt**. On the 7B it
+lifted grounding **48% → 80%** and accuracy **78% → 90%** — but faithfulness barely
+moved (**18% → 20%**), so trustworthiness stayed flat at 18%. The model now quotes
+*correctly*, yet erasing the quote still rarely changes the verdict. It bought
+back locatability, not faithfulness. (On the small 3B the longer prompt backfired
+— malformed output on 13 of 40.)
 
-**Caveats:** small corpora (10 and 15 emails), one run each, 7B varies run to
-run. Directional, not conclusive — I'd love for people with more VRAM to try it
-on bigger models and more docs and report back.
+**Caveats:** 40 emails, one run per cell, 7B varies run to run. Directional, not
+conclusive — I'd love for people with more VRAM to try it on bigger models and
+more docs and report back.
 
 Repo (MIT, pure-stdlib core): https://github.com/winxtxrgit/glassbox
 Full numbers: FINDINGS.md and benchmarks/RESULTS.md in the repo.

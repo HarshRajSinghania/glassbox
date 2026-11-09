@@ -29,13 +29,13 @@ glassbox measures that instead of trusting it. A verdict is "trustworthy" only
 when the explanation survives all three checks.
 
 **4/**
-3B vs 7B, same phishing-triage task, same 80% accuracy:
+3B vs 7B on 40 emails, similar accuracy:
 
-Grounded: 100% → 60%
-Faithful: 60% → 20%
-Trustworthy: 60% → 20%
+Grounded: 98% → 48%
+Faithful: 45% → 18%
+Trustworthy: 45% → 18%
 
-The small model is auditable 3x as often. And 2.3x faster.
+The small model is auditable ~2.5x as often. And ~2x faster.
 
 **5/**
 Why? The 7B stops quoting verbatim — it paraphrases its "evidence", so a third of
@@ -45,11 +45,13 @@ It's also non-deterministic at temp 0: re-running the same email flipped both th
 label and the citations.
 
 **6/**
-What the 7B *did* gain: calibration. Its confidence tracks accuracy; the 3B is
-underconfident.
+So I tried fixing the 7B with a few-shot "quote verbatim" prompt.
 
-So bigger bought calibration — not grounded, faithful, stable explanations.
-Those are separate axes. Measure them.
+Grounding: 48% → 80%. Accuracy: 78% → 90%. 
+
+But faithfulness? 18% → 20%. Trustworthiness didn't move.
+
+It bought back locatable quotes — not load-bearing ones. Grounding ≠ faithfulness.
 
 **7/**
 MIT, pure-stdlib core, runs free on Ollama. There's a `--json` mode and a GitHub
