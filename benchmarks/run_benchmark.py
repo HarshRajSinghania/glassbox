@@ -68,7 +68,12 @@ def aggregate(runs: list[dict]) -> dict:
     """
     model = runs[0]["model"]
     metrics = (*RATE_METRICS, *SCORE_METRICS, "latency")
-    row: dict = {"model": model, "n": runs[0]["n"], "runs": len(runs)}
+    # N can differ run to run if the model errors on a different set of docs
+    # (e.g. a prompt it can't follow); show the range so the displayed N and the
+    # averaged rates aren't quietly describing different document sets.
+    ns = [r["n"] for r in runs]
+    n = ns[0] if len(set(ns)) == 1 else f"{min(ns)}-{max(ns)}"
+    row: dict = {"model": model, "n": n, "runs": len(runs)}
     for metric in metrics:
         values = [r[metric] for r in runs]
         row[metric] = {"mean": mean(values), "min": min(values), "max": max(values)}

@@ -155,7 +155,12 @@ def check(
     for perturbation in perturbations:
         edited = perturbation.apply(document)
         changed = edited != document
-        after = triage(edited, backend, policy)
+        # A no-op edit would only re-run the model on the original text, and
+        # unchanged variants are excluded from the stability score anyway — so
+        # reuse the original verdict rather than spend another backend call.
+        # (Matters for the Thai perturbations, which are no-ops on every
+        # non-Thai document.)
+        after = triage(edited, backend, policy) if changed else original
         variants.append(
             Variant(
                 perturbation=perturbation,

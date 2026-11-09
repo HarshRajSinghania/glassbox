@@ -56,6 +56,14 @@ this project uses [semantic versioning](https://semver.org). Built over 2026-10 
 - CLI output is now forced to UTF-8, so non-ASCII evidence quotes (e.g. Thai
   spans) render correctly instead of as mojibake on a legacy console code page
   (cp874). Guarded so a captured stream under pytest is left untouched.
+- The consistency lens no longer spends a backend call on a perturbation that
+  leaves the document unchanged — it reuses the original verdict. Unchanged
+  variants were already excluded from the score, so this is a pure saving; it
+  matters because the Thai perturbations are no-ops on every non-Thai document
+  (two wasted model calls per English `stress`/`audit`/`batch` before this).
+- The benchmark runner shows N as a range when a model errors on a different
+  number of documents across `--runs`, so the displayed N and the averaged rates
+  no longer silently describe different document sets.
 
 ### Security
 - `lens` now loads models with `use_safetensors=True` (and leaves

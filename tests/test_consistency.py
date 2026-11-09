@@ -67,6 +67,22 @@ def test_noop_edits_are_excluded_from_the_score():
     assert all(v.changed for v in report.effective)
 
 
+def test_noop_edits_do_not_spend_a_backend_call():
+    # A perturbation that doesn't change the document must reuse the original
+    # verdict, not re-run the model (the Thai edits are no-ops on English, so
+    # otherwise every English stress/audit would pay for them).
+    calls = {"n": 0}
+
+    def counting(system, user):
+        calls["n"] += 1
+        return json.dumps({"label": "benign", "confidence": 0.5, "evidence": []})
+
+    report = check("verify your password now", CallableBackend(counting), DEFAULT_POLICY)
+    changed = sum(1 for v in report.variants if v.changed)
+    assert changed < len(report.variants)  # some edits really are no-ops here
+    assert calls["n"] == 1 + changed  # one original + one per edit that changed
+
+
 def test_untestable_when_no_edit_changes_the_document():
     noop = Perturbation("noop", "identity edit", lambda t: t)
     report = check(
