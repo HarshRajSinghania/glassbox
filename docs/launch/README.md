@@ -11,6 +11,7 @@ your own voice, and post from your own account.
 | `reddit-localllama.md` | r/LocalLLaMA (+ r/MachineLearning `[P]`) | Leads with the finding; honest caveats up front. |
 | `x-thread.md` | X / Twitter | 7-tweet thread. |
 | `good-first-issues.md` | GitHub issues | 7 drafted issues to seed contributions; `gh issue create` snippet included. |
+| `profile-readme-blurb.md` | your GitHub **profile** README | A featured-project card in three lengths (short / medium / long-with-visual). |
 
 Suggested order: post the **blog** first so the others can link to a canonical
 writeup, then r/LocalLLaMA, then Show HN (weekday morning US time lands best),
