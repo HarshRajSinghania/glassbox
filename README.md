@@ -212,6 +212,14 @@ occlusion attribution (mask each token -> drop in P(predicted)):
 
 The **logit lens** decodes the residual stream at each layer through the model's own output head: you watch the answer form — generic `the`, then a cluster of cities (`Rome`, `London`), settling on `Paris`. **Occlusion attribution** masks each input token and measures the drop in the predicted token's probability — the mechanistic echo of `probe`'s erasure test, but read straight off the logits instead of inferred from the output. The black box and the glass box, measuring the same thing two ways.
 
+## What it finds on real models
+
+I ran all four lenses over 40 labelled emails on local Qwen 2.5 (3B vs 7B), then asked whether a few-shot "quote verbatim" prompt could rescue the bigger model. The one-line version — **grounding is not faithfulness**:
+
+![Grouped bar chart: on qwen2.5:7b, few-shot lifts Grounded from 48% to 80% while Faithful (18% to 20%) and Trustworthy (18% to 18%) stay flat.](benchmarks/fewshot-7b.png)
+
+The 7B paraphrases its evidence, so plain-prompt grounding collapses to **48%** (the 3B holds **98%**). `--prompt few-shot` recovers it to **80%** — and lifts accuracy and calibration too — but faithfulness barely moves (**18% → 20%**), so trustworthiness stays flat. The model learns to quote *correctly* without its quotes becoming *load-bearing*. Full tables, three qualitative failure modes (including a 7B that confidently fell for a prompt injection), and reproduce commands are in [`benchmarks/RESULTS.md`](benchmarks/RESULTS.md).
+
 ## How it works
 
 ```
