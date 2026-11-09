@@ -10,7 +10,7 @@ your own voice, and post from your own account.
 | `show-hn.md` | Hacker News (Show HN) | Title + URL + the first comment to post immediately after. |
 | `reddit-localllama.md` | r/LocalLLaMA (+ r/MachineLearning `[P]`) | Leads with the finding; honest caveats up front. |
 | `x-thread.md` | X / Twitter | 7-tweet thread. |
-| `good-first-issues.md` | GitHub issues | 7 drafted issues to seed contributions; `gh issue create` snippet included. |
+| `good-first-issues.md` | GitHub issues | Record of the seed issues — **filed 2026-11-09 as #2–#7**. |
 | `profile-readme-blurb.md` | your GitHub **profile** README | A featured-project card in three lengths (short / medium / long-with-visual). |
 
 Suggested order: post the **blog** first so the others can link to a canonical

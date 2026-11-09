@@ -1,8 +1,10 @@
-# Good first issues — ready to file
+# Good first issues
 
-Each block below is a drafted GitHub issue. Create the labels first
-(`good first issue`, `enhancement`, `help wanted`, `docs`), then paste each
-block as a new issue. They're ordered easy → harder. You can file them with:
+**Filed on 2026-11-09** as GitHub issues
+[#2–#7](https://github.com/winxtxrgit/glassbox/issues?q=is%3Aissue+label%3A%22good+first+issue%22%2C%22help+wanted%22%2C%22research%22).
+(The original draft's "`--runs N`" item was already implemented this session, so
+it was not filed.) The drafts are kept below as a record; new ideas can be filed
+with:
 
 ```bash
 gh issue create --title "<title>" --label "good first issue,enhancement" --body "<body>"
@@ -73,15 +75,10 @@ Document it in the README backends section. Keep API-key handling env-only.
 
 ---
 
-## 6. `--runs N` for the benchmark to measure non-determinism
+## 6. ~~`--runs N` for the benchmark to measure non-determinism~~ (done)
 
-**Labels:** `enhancement`, `help wanted`
-
-FINDINGS.md notes the 7B gives different verdicts run-to-run at temperature 0.
-Add `--runs N` to `benchmarks/run_benchmark.py` so each model is evaluated N
-times; report the mean and the spread (min–max or stdev) for each metric. This
-turns "the 7B is noisy" from an anecdote into a number. Include a short note in
-RESULTS.md on how to read the spread.
+Implemented in this session — `benchmarks/run_benchmark.py` has `--runs N` with a
+mean + min-max spread table. Not filed.
 
 ---
 
