@@ -46,6 +46,8 @@ This reproduces, on a larger corpus, the pattern from [`../FINDINGS.md`](../FIND
 
 ## Reading it — does `--prompt few-shot` help?
 
+![Grouped bar chart of qwen2.5:7b on 40 emails: few-shot lifts Grounded from 48% to 80%, while Faithful (18% to 20%) and Trustworthy (18% to 18%) stay flat.](fewshot-7b.png)
+
 The nudge cuts in opposite directions by model size:
 
 - **On the 7B it works, dramatically — but only for grounding.** Grounding jumps
